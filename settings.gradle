@@ -1,1 +1,2 @@
 rootProject.name = 'tatacliq-root'
+include 'product-service'

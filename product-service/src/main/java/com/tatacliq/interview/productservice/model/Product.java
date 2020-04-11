@@ -41,7 +41,7 @@ public class Product {
 
     Boolean isBackorder;
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product")
     List<KeyValuePair> metafields;
 
     Boolean requiresShipping;

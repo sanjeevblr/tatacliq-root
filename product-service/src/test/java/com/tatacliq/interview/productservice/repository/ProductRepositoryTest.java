@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -22,7 +23,6 @@ class ProductRepositoryTest {
     @Test
     public void shouldSaveAProduct(){
         Product product = Product.builder()
-                .createdAt(new Date())
                 .description("Some Description")
                 .isBackorder(true)
                 .isLowQuantity(true)
@@ -33,18 +33,25 @@ class ProductRepositoryTest {
                 .pageTitle("Some Page Title")
                 .price(Product.Price.builder().max(5).min(1).range(4).build())
                 .product_id(2L)
-                .publishedAt(new Date())
                 .requiresShipping(true)
                 .sellerId(3L)
                 .title("Some Tile")
-                .updatedAt(new Date())
                 .workflow(Product.Workflow.builder().status("new").build())
                 .build();
+
+        List<Product.KeyValuePair> metafields = product.getMetafields();
+        metafields.get(0).setProduct(product);
 
         productRepository.save(product);
         List<Product> all = productRepository.findAll();
         Assertions.assertThat(all).isNotEmpty();
-        Assertions.assertThat(all.stream().findFirst()).isEqualTo(product);
+
+        Product actualProduct = all.get(0);
+
+        Assertions.assertThat(actualProduct.getPrice()).isEqualTo(product.getPrice());
+        Assertions.assertThat(actualProduct.getWorkflow()).isEqualTo(product.getWorkflow());
+
+        Assertions.assertThat(all.stream().findFirst().get()).isEqualTo(product);
 
     }
 

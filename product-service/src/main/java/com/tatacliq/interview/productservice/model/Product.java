@@ -1,13 +1,11 @@
 package com.tatacliq.interview.productservice.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -15,14 +13,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
+@EqualsAndHashCode(exclude = {"publishedAt", "createdAt","updatedAt", "metafields"})
+@ToString(exclude = {"publishedAt", "createdAt","updatedAt","metafields"})
 @Entity
 public class Product {
 
     @Id
-    @GeneratedValue
-    Long id;
-
     Long product_id;
 
     Long sellerId;
@@ -35,6 +31,8 @@ public class Product {
 
     String manufacturer;
 
+    @OneToOne(cascade = {CascadeType.ALL})
+    @JoinColumn(name = "price_id")
     Price price;
 
     Boolean isLowQuantity;
@@ -43,25 +41,45 @@ public class Product {
 
     Boolean isBackorder;
 
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     List<KeyValuePair> metafields;
 
     Boolean requiresShipping;
 
     Boolean isVisible;
 
+    @OneToOne(cascade = {CascadeType.ALL})
+    @JoinColumn(name = "workflow_id")
     Workflow workflow;
 
-    Date publishedAt;
+    LocalDateTime publishedAt;
 
-    Date createdAt;
+    LocalDateTime createdAt;
 
-    Date updatedAt;
+    LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        publishedAt = createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
     @Data
+    @Entity
+    @ToString(exclude = {"id"})
+    @EqualsAndHashCode(exclude = {"id"})
     public static class Price {
+
+        @Id
+        @GeneratedValue
+        Integer id;
 
         Integer range;
 
@@ -73,17 +91,35 @@ public class Product {
     @NoArgsConstructor
     @Builder
     @Data
+    @Entity
+    @ToString(exclude = {"product","id"})
+    @EqualsAndHashCode(exclude = {"product","id"})
     public static class KeyValuePair {
+        @Id
+        @GeneratedValue
+        Integer id;
+
         String key;
 
         String value;
+
+        @ManyToOne
+        @JoinColumn(name="product_id", nullable=false)
+        Product product;
     }
 
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
     @Data
+    @Entity
+    @ToString(exclude = {"id"})
+    @EqualsAndHashCode(exclude = {"id"})
     public static class Workflow {
+
+        @Id
+        @GeneratedValue
+        Integer id;
 
         String status;
     }
